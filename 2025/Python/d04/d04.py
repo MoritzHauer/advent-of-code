@@ -1,3 +1,11 @@
+# Directions for the 8 adjacent positions (including diagonals)
+DIRECTIONS = [
+    (-1, -1), (-1, 0), (-1, 1),  # top-left, top, top-right
+    (0, -1),           (0, 1),    # left, right
+    (1, -1),  (1, 0),  (1, 1)     # bottom-left, bottom, bottom-right
+]
+
+
 def count_accessible_rolls(grid):
     """
     Count the number of rolls of paper that can be accessed by a forklift.
@@ -16,13 +24,6 @@ def count_accessible_rolls(grid):
     cols = len(grid[0])
     accessible_count = 0
     
-    # Directions for the 8 adjacent positions (including diagonals)
-    directions = [
-        (-1, -1), (-1, 0), (-1, 1),  # top-left, top, top-right
-        (0, -1),           (0, 1),    # left, right
-        (1, -1),  (1, 0),  (1, 1)     # bottom-left, bottom, bottom-right
-    ]
-    
     # Check each position in the grid
     for row in range(rows):
         for col in range(cols):
@@ -31,7 +32,7 @@ def count_accessible_rolls(grid):
                 # Count adjacent rolls
                 adjacent_rolls = 0
                 
-                for dr, dc in directions:
+                for dr, dc in DIRECTIONS:
                     new_row = row + dr
                     new_col = col + dc
                     
@@ -68,13 +69,6 @@ def count_removable_rolls(grid):
     
     total_removed = 0
     
-    # Directions for the 8 adjacent positions (including diagonals)
-    directions = [
-        (-1, -1), (-1, 0), (-1, 1),  # top-left, top, top-right
-        (0, -1),           (0, 1),    # left, right
-        (1, -1),  (1, 0),  (1, 1)     # bottom-left, bottom, bottom-right
-    ]
-    
     # Keep removing accessible rolls until none can be removed
     while True:
         # Find all accessible rolls in this iteration
@@ -87,7 +81,7 @@ def count_removable_rolls(grid):
                     # Count adjacent rolls
                     adjacent_rolls = 0
                     
-                    for dr, dc in directions:
+                    for dr, dc in DIRECTIONS:
                         new_row = row + dr
                         new_col = col + dc
                         
