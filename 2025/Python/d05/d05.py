@@ -101,12 +101,13 @@ def solve_problem(numbers, operation):
         raise ValueError(f"Unknown operation: {operation}")
 
 
-def solve(input_text):
+def solve(input_text, reverse_numbers=False):
     """
     Solve the math worksheet and return the grand total.
     
     Args:
         input_text: Multi-line string representing the worksheet
+        reverse_numbers: If True, reverse the order of numbers in each problem (for Part 2)
     
     Returns:
         The grand total (sum of all problem results)
@@ -115,7 +116,8 @@ def solve(input_text):
     
     grand_total = 0
     for numbers, operation in problems:
-        result = solve_problem(numbers, operation)
+        processed_numbers = numbers[::-1] if reverse_numbers else numbers
+        result = solve_problem(processed_numbers, operation)
         grand_total += result
     
     return grand_total
@@ -128,10 +130,15 @@ if __name__ == '__main__':
   6 98  215 314
 *   +   *   +  """
 
-    print("Example:")
+    print("Example Part 1:")
     result = solve(example)
     print(f"Grand total: {result}")
     print(f"Expected: 4277556")
+    print()
+
+    print("Example Part 2 (reversed):")
+    result_part2 = solve(example, reverse_numbers=True)
+    print(f"Grand total: {result_part2}")
     print()
 
     # Solve the actual puzzle
@@ -143,6 +150,10 @@ if __name__ == '__main__':
             print("Part 1 answer:")
             answer = solve(puzzle_input)
             print(f"Grand total: {answer}")
+            print()
+            print("Part 2 answer:")
+            answer_part2 = solve(puzzle_input, reverse_numbers=True)
+            print(f"Grand total: {answer_part2}")
             break
     else:
         print("No input file found.")
