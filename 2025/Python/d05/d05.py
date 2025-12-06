@@ -1,3 +1,32 @@
+import os
+
+
+def extract_problem(padded_lines, column_indices):
+    """
+    Extract a problem from the padded lines given column indices.
+    
+    Args:
+        padded_lines: List of strings padded to the same width
+        column_indices: List of column indices that form this problem
+    
+    Returns:
+        Tuple of (numbers_list, operation)
+    """
+    problem_numbers = []
+    
+    for row in range(len(padded_lines) - 1):
+        # Extract number from this row
+        num_str = ''.join(padded_lines[row][c] for c in column_indices).strip()
+        if num_str:
+            problem_numbers.append(int(num_str))
+    
+    # Get the operation from the last row
+    op_str = ''.join(padded_lines[-1][c] for c in column_indices).strip()
+    operation = op_str
+    
+    return (problem_numbers, operation)
+
+
 def parse_worksheet(input_text):
     """
     Parse the math worksheet into individual problems.
@@ -35,39 +64,14 @@ def parse_worksheet(input_text):
         else:
             # End of a problem (separator column)
             if current_problem:
-                # Extract this problem
-                problem_numbers = []
-                operation = None
-                
-                for row in range(len(padded_lines) - 1):
-                    # Extract number from this row
-                    num_str = ''.join(padded_lines[row][c] for c in current_problem).strip()
-                    if num_str:
-                        problem_numbers.append(int(num_str))
-                
-                # Get the operation from the last row
-                op_str = ''.join(padded_lines[-1][c] for c in current_problem).strip()
-                operation = op_str
-                
-                problems.append((problem_numbers, operation))
+                problems.append(extract_problem(padded_lines, current_problem))
                 current_problem = []
         
         col += 1
     
     # Handle the last problem if it exists
     if current_problem:
-        problem_numbers = []
-        operation = None
-        
-        for row in range(len(padded_lines) - 1):
-            num_str = ''.join(padded_lines[row][c] for c in current_problem).strip()
-            if num_str:
-                problem_numbers.append(int(num_str))
-        
-        op_str = ''.join(padded_lines[-1][c] for c in current_problem).strip()
-        operation = op_str
-        
-        problems.append((problem_numbers, operation))
+        problems.append(extract_problem(padded_lines, current_problem))
     
     return problems
 
@@ -117,28 +121,28 @@ def solve(input_text):
     return grand_total
 
 
-# Test with the example from the puzzle description
-example = """123 328  51 64 
+if __name__ == '__main__':
+    # Test with the example from the puzzle description
+    example = """123 328  51 64 
  45 64  387 23 
   6 98  215 314
 *   +   *   +  """
 
-print("Example:")
-result = solve(example)
-print(f"Grand total: {result}")
-print(f"Expected: 4277556")
-print()
+    print("Example:")
+    result = solve(example)
+    print(f"Grand total: {result}")
+    print(f"Expected: 4277556")
+    print()
 
-# Solve the actual puzzle
-import os
-for filename in ['input.txt', 'input']:
-    filepath = os.path.join(os.path.dirname(__file__), filename)
-    if os.path.exists(filepath):
-        with open(filepath, 'r') as f:
-            puzzle_input = f.read()
-        print("Part 1 answer:")
-        answer = solve(puzzle_input)
-        print(f"Grand total: {answer}")
-        break
-else:
-    print("No input file found.")
+    # Solve the actual puzzle
+    for filename in ['input.txt', 'input']:
+        filepath = os.path.join(os.path.dirname(__file__), filename)
+        if os.path.exists(filepath):
+            with open(filepath, 'r') as f:
+                puzzle_input = f.read()
+            print("Part 1 answer:")
+            answer = solve(puzzle_input)
+            print(f"Grand total: {answer}")
+            break
+    else:
+        print("No input file found.")
