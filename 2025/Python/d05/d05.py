@@ -116,9 +116,8 @@ def solve(input_text, reverse_numbers=False):
     
     grand_total = 0
     for numbers, operation in problems:
-        if reverse_numbers:
-            numbers = numbers[::-1]
-        result = solve_problem(numbers, operation)
+        processed_numbers = numbers[::-1] if reverse_numbers else numbers
+        result = solve_problem(processed_numbers, operation)
         grand_total += result
     
     return grand_total
