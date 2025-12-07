@@ -1,33 +1,55 @@
 import os
 
 
-def extract_problem(padded_lines, column_indices):
+def extract_problem(padded_lines, column_indices, cephalopod_mode=False):
     """
     Extract a problem from the padded lines given column indices.
     
     Args:
         padded_lines: List of strings padded to the same width
         column_indices: List of column indices that form this problem
+        cephalopod_mode: If True, read numbers in cephalopod format (each column is a digit)
     
     Returns:
         Tuple of (numbers_list, operation)
     """
-    problem_numbers = []
-    
-    for row in range(len(padded_lines) - 1):
-        # Extract number from this row
-        num_str = ''.join(padded_lines[row][c] for c in column_indices).strip()
-        if num_str:
-            problem_numbers.append(int(num_str))
-    
-    # Get the operation from the last row
-    op_str = ''.join(padded_lines[-1][c] for c in column_indices).strip()
-    operation = op_str
-    
-    return (problem_numbers, operation)
+    if not cephalopod_mode:
+        # Part 1: Each row is a complete number
+        problem_numbers = []
+        
+        for row in range(len(padded_lines) - 1):
+            # Extract number from this row
+            num_str = ''.join(padded_lines[row][c] for c in column_indices).strip()
+            if num_str:
+                problem_numbers.append(int(num_str))
+        
+        # Get the operation from the last row
+        op_str = ''.join(padded_lines[-1][c] for c in column_indices).strip()
+        operation = op_str
+        
+        return (problem_numbers, operation)
+    else:
+        # Part 2: Each column is a digit, read top-to-bottom to form numbers
+        problem_numbers = []
+        
+        for col in column_indices:
+            # Read down this column to form a number
+            num_str = ''
+            for row in range(len(padded_lines) - 1):
+                digit = padded_lines[row][col]
+                if digit != ' ':
+                    num_str += digit
+            if num_str:
+                problem_numbers.append(int(num_str))
+        
+        # Get the operation from the last row (should be same for all columns in problem)
+        op_str = padded_lines[-1][column_indices[0]].strip()
+        operation = op_str
+        
+        return (problem_numbers, operation)
 
 
-def parse_worksheet(input_text):
+def parse_worksheet(input_text, cephalopod_mode=False):
     """
     Parse the math worksheet into individual problems.
     
@@ -36,6 +58,7 @@ def parse_worksheet(input_text):
     
     Args:
         input_text: Multi-line string representing the worksheet
+        cephalopod_mode: If True, parse in cephalopod format (right-to-left, each column is a digit)
     
     Returns:
         List of tuples (numbers_list, operation) for each problem
@@ -52,26 +75,29 @@ def parse_worksheet(input_text):
     problems = []
     current_problem = []
     
-    col = 0
-    while col < max_width:
+    # In cephalopod mode, read right-to-left
+    col_range = range(max_width - 1, -1, -1) if cephalopod_mode else range(max_width)
+    
+    for col in col_range:
         # Check if this column is the start or part of a problem
         # A column is part of a problem if any non-last row has a non-space character
         is_problem_col = any(padded_lines[row][col] != ' ' for row in range(len(padded_lines)))
         
         if is_problem_col:
             # Start or continue a problem
-            current_problem.append(col)
+            if cephalopod_mode:
+                current_problem.insert(0, col)  # Insert at beginning to maintain correct order
+            else:
+                current_problem.append(col)
         else:
             # End of a problem (separator column)
             if current_problem:
-                problems.append(extract_problem(padded_lines, current_problem))
+                problems.append(extract_problem(padded_lines, current_problem, cephalopod_mode))
                 current_problem = []
-        
-        col += 1
     
     # Handle the last problem if it exists
     if current_problem:
-        problems.append(extract_problem(padded_lines, current_problem))
+        problems.append(extract_problem(padded_lines, current_problem, cephalopod_mode))
     
     return problems
 
@@ -101,23 +127,22 @@ def solve_problem(numbers, operation):
         raise ValueError(f"Unknown operation: {operation}")
 
 
-def solve(input_text, reverse_numbers=False):
+def solve(input_text, cephalopod_mode=False):
     """
     Solve the math worksheet and return the grand total.
     
     Args:
         input_text: Multi-line string representing the worksheet
-        reverse_numbers: If True, reverse the order of numbers in each problem (for Part 2)
+        cephalopod_mode: If True, parse in cephalopod format (right-to-left, each column is a digit)
     
     Returns:
         The grand total (sum of all problem results)
     """
-    problems = parse_worksheet(input_text)
+    problems = parse_worksheet(input_text, cephalopod_mode)
     
     grand_total = 0
     for numbers, operation in problems:
-        processed_numbers = numbers[::-1] if reverse_numbers else numbers
-        result = solve_problem(processed_numbers, operation)
+        result = solve_problem(numbers, operation)
         grand_total += result
     
     return grand_total
@@ -136,9 +161,10 @@ if __name__ == '__main__':
     print(f"Expected: 4277556")
     print()
 
-    print("Example Part 2 (reversed):")
-    result_part2 = solve(example, reverse_numbers=True)
+    print("Example Part 2 (cephalopod mode):")
+    result_part2 = solve(example, cephalopod_mode=True)
     print(f"Grand total: {result_part2}")
+    print(f"Expected: 3263827")
     print()
 
     # Solve the actual puzzle
@@ -152,7 +178,7 @@ if __name__ == '__main__':
             print(f"Grand total: {answer}")
             print()
             print("Part 2 answer:")
-            answer_part2 = solve(puzzle_input, reverse_numbers=True)
+            answer_part2 = solve(puzzle_input, cephalopod_mode=True)
             print(f"Grand total: {answer_part2}")
             break
     else:
