@@ -104,6 +104,45 @@ def solve(input_text, num_connections=1000, debug=False):
     return result
 
 
+def solve_part2(input_text, debug=False):
+    """
+    Connect junction boxes until they're all in one circuit.
+    
+    Args:
+        input_text: Input containing junction box positions
+        debug: If True, print progress
+    
+    Returns:
+        Product of X coordinates of last two boxes connected
+    """
+    positions = parse_input(input_text)
+    n = len(positions)
+    
+    # Create a min-heap of all pairwise distances
+    distances = []
+    for i in range(n):
+        for j in range(i + 1, n):
+            dist = distance(positions[i], positions[j])
+            heapq.heappush(distances, (dist, i, j))
+    
+    # Union-Find to track circuits
+    uf = UnionFind(n)
+    
+    # Keep connecting until all boxes are in one circuit
+    last_i, last_j = None, None
+    while len(uf.get_circuit_sizes()) > 1:
+        dist, i, j = heapq.heappop(distances)
+        if uf.union(i, j):  # Only count successful connections
+            last_i, last_j = i, j
+            if debug:
+                num_circuits = len(uf.get_circuit_sizes())
+                print(f"Connected box {i} <-> box {j}, circuits remaining: {num_circuits}")
+    
+    # Return product of X coordinates
+    x1, x2 = positions[last_i][0], positions[last_j][0]
+    return x1 * x2
+
+
 # Test with the example
 example = """162,817,812
 57,618,57
@@ -132,15 +171,25 @@ print(f"Product of three largest circuits: {result}")
 print(f"Expected: 40")
 print()
 
+print("Example Part 2 (connect all):")
+result2 = solve_part2(example, debug=False)
+print(f"Product of X coordinates: {result2}")
+print(f"Expected: 25272")
+print()
+
 # Solve the actual puzzle
 import os
 for filename in ['input.txt', 'input']:
     if os.path.exists(filename):
         with open(filename, 'r') as f:
             puzzle_input = f.read()
-        print("Puzzle answer (1000 connections):")
+        print("Puzzle Part 1 (1000 connections):")
         answer = solve(puzzle_input, num_connections=1000)
         print(f"Product of three largest circuits: {answer}")
+        print()
+        print("Puzzle Part 2 (connect all):")
+        answer2 = solve_part2(puzzle_input, debug=False)
+        print(f"Product of X coordinates: {answer2}")
         break
 else:
     print("No input file found.")
