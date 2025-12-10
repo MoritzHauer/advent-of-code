@@ -233,8 +233,26 @@ def solve_part1(filename: str) -> int:
         if not line:
             continue
         
-        target, buttons = parse_line(line)
+        target, buttons, _ = parse_line(line)
         presses = solve_machine(target, buttons)
+        total_presses += presses
+    
+    return total_presses
+
+
+def solve_part2(filename: str) -> int:
+    """Solve part 2 - find minimum button presses for joltage targets."""
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    
+    total_presses = 0
+    for line in lines:
+        line = line.strip()
+        if not line:
+            continue
+        
+        _, buttons, joltage = parse_line(line)
+        presses = solve_machine_part2(joltage, buttons)
         total_presses += presses
     
     return total_presses
@@ -244,17 +262,30 @@ example = """[.##.] (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
 [...#.] (0,2,3,4) (2,3) (0,4) (0,1,2) (1,2,3,4) {7,5,12,7,2}
 [.###.#] (0,1,2,3,4) (0,3,4) (0,1,2,4,5) (1,2) {10,11,11,5,10,5}"""
 
-# Test each example machine
+# Test Part 1
+print("=== Part 1 ===")
 total = 0
 for i, line in enumerate(example.split('\n'), 1):
-    target, buttons = parse_line(line)
+    target, buttons, _ = parse_line(line)
     presses = solve_machine(target, buttons)
-    print(f"Machine {i}: target={['#' if t else '.' for t in target]}, buttons={buttons}")
-    print(f"  -> needs {presses} button presses")
+    print(f"Machine {i}: needs {presses} button presses")
     total += presses
 
-print(f"\nExample total: {total} (expected 7)")
+print(f"Example total: {total} (expected 7)")
 
-# Solve actual puzzle
 result = solve_part1('input')
-print(f"\nPart 1 answer: {result}")
+print(f"Part 1 answer: {result}")
+
+# Test Part 2
+print("\n=== Part 2 ===")
+total = 0
+for i, line in enumerate(example.split('\n'), 1):
+    _, buttons, joltage = parse_line(line)
+    presses = solve_machine_part2(joltage, buttons)
+    print(f"Machine {i}: joltage target={joltage}, needs {presses} button presses")
+    total += presses
+
+print(f"Example total: {total} (expected 33)")
+
+result = solve_part2('input')
+print(f"Part 2 answer: {result}")
