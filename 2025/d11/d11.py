@@ -64,10 +64,56 @@ def count_paths(graph: Dict[str, List[str]], start: str, end: str) -> int:
     return dfs(start, {start})
 
 
+def count_paths_with_required_nodes(graph: Dict[str, List[str]], start: str, end: str, 
+                                    required: Set[str]) -> int:
+    """
+    Count all paths from start to end that visit all required nodes.
+    
+    Uses dynamic programming with memoization:
+    - State: (current_node, frozenset of visited required nodes)
+    - Memo stores count of paths from this state to the end
+    """
+    from functools import lru_cache
+    
+    @lru_cache(maxsize=None)
+    def dfs(current: str, visited_required: frozenset) -> int:
+        # Base case: reached the destination
+        if current == end:
+            # Only count if all required nodes were visited
+            return 1 if len(visited_required) == len(required) else 0
+        
+        # Dead end: no outgoing connections
+        if current not in graph:
+            return 0
+        
+        # Explore all neighbors
+        total_paths = 0
+        for neighbor in graph[current]:
+            # Update visited required nodes if neighbor is required
+            new_visited = visited_required
+            if neighbor in required and neighbor not in visited_required:
+                new_visited = visited_required | {neighbor}
+            
+            total_paths += dfs(neighbor, new_visited)
+        
+        return total_paths
+    
+    # Start DFS
+    initial_required = frozenset({start}) if start in required else frozenset()
+    return dfs(start, initial_required)
+
+
 def solve_part1(filename: str) -> int:
     """Solve part 1 - count paths from 'you' to 'out'."""
     graph = parse_input(filename)
     return count_paths(graph, 'you', 'out')
+
+
+def solve_part2(filename: str) -> int:
+    """Solve part 2 - count paths from 'svr' to 'out' that visit both 'dac' and 'fft'."""
+    graph = parse_input(filename)
+    required_nodes = {'dac', 'fft'}
+    return count_paths_with_required_nodes(graph, 'svr', 'out', required_nodes)
 
 
 # Test with example
@@ -82,9 +128,27 @@ ggg: out
 hhh: ccc fff iii
 iii: out"""
 
-# Create example file
+# Part 2 example
+example_input_part2 = """svr: aaa bbb
+aaa: fft
+fft: ccc
+bbb: tty
+tty: ccc
+ccc: ddd eee
+ddd: hub
+hub: fff
+eee: dac
+dac: fff
+fff: ggg hhh
+ggg: out
+hhh: out"""
+
+# Create example files
 with open('example', 'w') as f:
     f.write(example_input)
+
+with open('example2', 'w') as f:
+    f.write(example_input_part2)
 
 # Test example
 print("=== Part 1 ===")
@@ -94,3 +158,12 @@ print(f"Example: {example_result} paths (expected 5)")
 # Solve actual puzzle
 result = solve_part1('input')
 print(f"Part 1 answer: {result}")
+
+# Test Part 2
+print("\n=== Part 2 ===")
+example_result2 = solve_part2('example2')
+print(f"Example: {example_result2} paths (expected 2)")
+
+# Solve actual puzzle
+result2 = solve_part2('input')
+print(f"Part 2 answer: {result2}")
